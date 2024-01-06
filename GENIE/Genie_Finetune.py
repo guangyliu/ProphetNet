@@ -94,7 +94,7 @@ def get_arguments():
     parser.add_argument('--seed', type=int, default=101, help='')
 
     # muti-gpu
-    parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
+    parser.add_argument("--local-rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
     parser.add_argument("--server_port", type=str, default="", help="For distant debugging.")
 
@@ -126,7 +126,8 @@ def load_states_from_checkpoint(model_file: str) -> CheckpointState:
 def main():
     # args setting
     args = get_arguments()
-
+    set_seed(args.seed)
+    setup_env(args)
     # out dir set
     if dist.get_rank() == 0:
         if not os.path.exists(args.checkpoint_path):
@@ -135,12 +136,14 @@ def main():
 
     logger.log(f'saving the hyperparameters to {args.checkpoint_path}/training_args.json')
     with open(f'{args.checkpoint_path}/training_args.json', 'w') as f:
+        save_dict = args.__dict__
+        save_dict['device'] = str(save_dict['device'])
         json.dump(args.__dict__, f, indent=2)
 
     # seed setting
-    set_seed(args.seed)
+    
     # dpp setting
-    setup_env(args)
+    
     # dist_util.setup_dist()
 
     # logger setting

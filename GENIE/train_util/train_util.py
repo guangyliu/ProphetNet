@@ -128,7 +128,7 @@ class TrainLoop:
             ]
 
         # model to DDP
-        if dist.get_world_size() > 1:
+        if dist.get_world_size() >= 1:
             self.model = DDP(
                 self.model, device_ids=[dist.get_rank()], output_device=dist.get_rank(), find_unused_parameters=False,
             )
