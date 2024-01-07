@@ -86,7 +86,7 @@ def get_arguments():
     parser.add_argument('--seed', type=int, default=101, help='')
     #
     # muti-gpu
-    parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
+    parser.add_argument("--local-rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
     parser.add_argument("--server_port", type=str, default="", help="For distant debugging.")
 
@@ -98,7 +98,7 @@ CheckpointState = collections.namedtuple("CheckpointState",
                                                      ['model_dict', 'optimizer_dict', 'scheduler_dict', 'offset'])
 
 def load_states_from_checkpoint(model_file: str) -> CheckpointState:
-    logger.info('Reading saved model from %s', model_file)
+    logger.info('Reading saved model from', model_file)
     state_dict = torch.load(model_file, map_location=lambda s, l: default_restore_location(s, 'cpu'))
     logger.info('model_state_dict keys %s', state_dict.keys())
     return CheckpointState(**state_dict)
@@ -339,13 +339,15 @@ def main():
                 '''
                 for s2s
                 '''
-                input_shape = (batch['src_input_ids'].shape[0], args.tgt_max_len, args.in_channel)
-                src_input_ids = batch['src_input_ids']
-                tgt_input_ids = batch['tgt_input_ids']
-                # print(p_input_ids.shape)
-                src_attention_mask = batch['src_attention_mask']
-                model_kwargs = {'src_input_ids' : src_input_ids, 'src_attention_mask': src_attention_mask}
 
+
+                input_shape = (batch['src_input_ids'].shape[0], args.tgt_max_len, args.in_channel)
+
+                src_input_ids = batch['src_input_ids'].to(args.device)
+                tgt_input_ids = batch['tgt_input_ids'].to(args.device)
+                # print(p_input_ids.shape)
+                src_attention_mask = batch['src_attention_mask'].to(args.device)
+                model_kwargs = {'src_input_ids' : src_input_ids, 'src_attention_mask': src_attention_mask}
                 sample = sample_fn(
                     model,
                     input_shape,

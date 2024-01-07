@@ -748,7 +748,6 @@ class GaussianDiffusion:
         :return: a non-differentiable batch of samples.
         """
         final = None
-
         if noise is not None:
             # print("pre noise:", noise)
             std = _extract_into_tensor(self.sqrt_one_minus_alphas_cumprod,
