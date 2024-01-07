@@ -1,11 +1,12 @@
 
-OUT_DIR="./ckpt/my"
-DATA_PATH="./data/glge-released-dataset/easy"
-DATA_NAME="xsum_data"
+OUT_DIR="./ckpt/amazon"
+# DATA_PATH="./data/glge-released-dataset/easy"
+DATA_PATH="./data/latentops_dataset"
+DATA_NAME="amazon_data"
 PRETRAIN_CKPT_PATH="./ckpt/GENIE_ckpt-500w"
 
 
-CUDA_VISIBLE_DEVICES=7 python -u -m torch.distributed.launch --nproc_per_node=1 --master_port=9421  \
+CUDA_VISIBLE_DEVICES=5 python -u -m torch.distributed.launch --nproc_per_node=1 --master_port=9422  \
 ./Genie_Finetune.py \
 --checkpoint_path=$OUT_DIR \
 --model_channels 128 --in_channel 128 --out_channel 128 --vocab_size 30522 \
