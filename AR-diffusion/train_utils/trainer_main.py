@@ -1,3 +1,7 @@
+import os
+# new_directory = "/home/guangyi/repo/ProphetNet/AR-diffusion"
+# os.chdir(new_directory)
+# print("Current Working Directory: ", os.getcwd())
 import hydra
 import torch
 import logging
@@ -26,7 +30,6 @@ logger = logging.getLogger(__name__)
 @hydra.main(version_base=None, config_path="../", config_name="config")
 def main(config):
     local_rank = int(os.environ["LOCAL_RANK"])
-
     config.exp.dir = os.path.join(config.exp.root, config.data.name, config.exp.name)
     if (local_rank == 0) and (not os.path.exists(config.exp.dir)):
         os.makedirs(config.exp.dir)

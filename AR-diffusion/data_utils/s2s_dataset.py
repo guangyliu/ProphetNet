@@ -13,7 +13,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data.distributed import DistributedSampler
 
-from data_utils.fairseq_dataset import load_fairseq
+# from data_utils.fairseq_dataset import load_fairseq
 
 logger = logging.getLogger(__name__)
 
@@ -75,22 +75,22 @@ def load_jsonl_data(config, attri):
                         'src': src.strip('\n'),
                         'tgt': tgt.strip('\n')
                     })
-        elif config.fairseq.use_fairseq:
-            if config.fairseq.real_data:
-                data_attri = 'real'
-            elif config.fairseq.dist_data:
-                data_attri = 'dist'
+        # elif config.fairseq.use_fairseq:
+        #     if config.fairseq.real_data:
+        #         data_attri = 'real'
+        #     elif config.fairseq.dist_data:
+        #         data_attri = 'dist'
                 
-            path = os.path.join(config.data.path, 
-                                f'{config.data.name}_fairseq', 
-                                f'{config.data.name}.{config.src_lang}-{config.tgt_lang}_{data_attri}/')
-            src_dataset, tgt_dataset = load_fairseq(config.data.name, path, attri)
+        #     path = os.path.join(config.data.path, 
+        #                         f'{config.data.name}_fairseq', 
+        #                         f'{config.data.name}.{config.src_lang}-{config.tgt_lang}_{data_attri}/')
+        #     src_dataset, tgt_dataset = load_fairseq(config.data.name, path, attri)
             
-            for src, tgt in zip(src_dataset, tgt_dataset):
-                data.append({
-                    'src': src,
-                    'tgt': tgt
-                })
+        #     for src, tgt in zip(src_dataset, tgt_dataset):
+        #         data.append({
+        #             'src': src,
+        #             'tgt': tgt
+        #         })
         
     elif config.data.name in ['cnn_dm', 'xsum', 'gigaword', 'squad', 'personachat', 'coqa']:
         src_path = os.path.join(config.data.path, config.data.name, attri + '.src')
