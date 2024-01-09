@@ -92,7 +92,7 @@ def load_jsonl_data(config, attri):
         #             'tgt': tgt
         #         })
         
-    elif config.data.name in ['cnn_dm', 'xsum', 'gigaword', 'squad', 'personachat', 'coqa']:
+    elif config.data.name in ['cnn_dm', 'xsum', 'gigaword', 'squad', 'personachat', 'coqa', 'yelp','amazon']:
         src_path = os.path.join(config.data.path, config.data.name, attri + '.src')
         tgt_path = os.path.join(config.data.path, config.data.name, attri + '.tgt')
 
