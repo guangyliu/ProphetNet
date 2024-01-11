@@ -1,6 +1,9 @@
 ./AR-diffusion/my_output
 ./AR-diffusion/outputs
 ./AR-diffusion/data
+AR-diffusion/my_output
+AR-diffusion/outputs
+AR-diffusion/data
 # Macos
 .DS_Store
 
