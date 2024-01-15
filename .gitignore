@@ -4,6 +4,8 @@
 AR-diffusion/my_output
 AR-diffusion/outputs
 AR-diffusion/data
+GENIE/ckpt
+GENIE/data
 # Macos
 .DS_Store
 
