@@ -363,7 +363,6 @@ class GaussianDiffusion:
         B, C = x.size(0), x.size(-1)
         if self.config.schedule_sampler == 'uniform':
             assert t.shape == (B,)
-
         model_output, _ = model(x, self._scale_timesteps(t), x_self_cond=self_cond, **model_kwargs)
 
         # Learning Variance

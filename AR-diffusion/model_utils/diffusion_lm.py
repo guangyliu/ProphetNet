@@ -204,7 +204,6 @@ class CrossAttention_Diffusion_LM(nn.Module):
             time_emb = self.time_trans(time_emb)
             decoder_input = decoder_input + time_emb
         hidden_states = self.dropout(self.LayerNorm(decoder_input))
-
         # 5. Decoder Blocks
         for block in self.transformer_blocks:
             hidden_states = block(

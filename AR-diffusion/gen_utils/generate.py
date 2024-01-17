@@ -191,15 +191,16 @@ def main(config):
                 print(f"start sample {i+1} epoch...")
 
             for _, batch in enumerate(tqdm(dev_dataloader)):
+
                 with torch.no_grad():
-                    encoder_hidden_states = model.module.encoder(
+                    encoder_hidden_states = model.encoder(
                         input_ids=batch['src_input_ids'].cuda(), 
                         attention_mask=batch['src_attention_mask'].cuda(),
                     ).last_hidden_state  # [bs, seq_len, hz]
-
+                import ipdb;ipdb.set_trace()
                 if config.pred_len:
                     with torch.no_grad():
-                        length_out = model.module.get_pred_len(
+                        length_out = model.get_pred_len(
                             encoder_hidden_states=encoder_hidden_states,
                             src_masks=batch['src_attention_mask'].cuda(),
                             normalize=True,
@@ -220,9 +221,9 @@ def main(config):
                         batch['src_input_ids'].shape[0], config.tgt_len, config.in_channels,
                     )
 
-                model_kwargs = {'src_attention_mask': batch['src_attention_mask'],
+                model_kwargs = {'src_attention_mask': batch['src_attention_mask'].cuda(),
                                 'tgt_attention_mask': tgt_attention_mask,
-                                'encoder_hidden_states': encoder_hidden_states,}
+                                'encoder_hidden_states': encoder_hidden_states.cuda(),}
 
                 sample = sample_fn(
                     model,
@@ -241,9 +242,8 @@ def main(config):
                     logger.info(f"sample result shape: {sample.shape}")  # (bs, seq_len, emb_dim)
                     print('decoding for e2e... ')
 
-                logits = model.module.get_logits(sample)  # (bs, seq_len, vocab_size)
+                logits = model.get_logits(sample)  # (bs, seq_len, vocab_size)
                 sample_id_tensor = torch.argmax(logits, dim=-1)
-
                 if config.data.name in ['wmt14', 'wmt14_hug', 'iwslt14', 'iwslt14_tok'] and (not config.use_mbert):
                     if config.use_bpe:
                         for sample_id in sample_id_tensor:

@@ -357,7 +357,7 @@ class CrossAttention_Diffusion_LM(nn.Module):
                 elif self.interpolation >= 100 or self.interpolation <= -100:
                     if self.pos2neg_vec == None: 
                         self.pos2neg_vec = passage_hidden[:100].mean(dim=0,keepdim=True) - passage_hidden[100:].mean(dim=0,keepdim=True)
-                    passage_hidden = passage_hidden + self.interpolation/100 * self.pos2neg_vec
+                    passage_hidden = passage_hidden + self.interpolation/100 * self.pos2neg_vec # + pos -> neg
             self.passage_hidden = passage_hidden
         else:
             passage_hidden = self.passage_hidden
