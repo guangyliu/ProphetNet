@@ -86,10 +86,10 @@ def get_arguments():
     parser.add_argument('--seed', type=int, default=101, help='')
     #
     # muti-gpu
-    parser.add_argument("--local-rank", type=int, default=-1, help="For distributed training: local_rank")
+    parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
     parser.add_argument("--server_port", type=str, default="", help="For distant debugging.")
-
+    parser.add_argument("--interpolation", type=float, default=1.)
     args = parser.parse_args()
     return args
 
@@ -216,7 +216,7 @@ def main():
     model.eval()
     # load trained model
     model_saved_state = load_states_from_checkpoint(args.eval_model_path)
-    model.load_state_dict(model_saved_state.model_dict)
+    model.load_state_dict(model_saved_state.model_dict,strict=False)
 
     pytorch_total_params = sum(p.numel() for p in model.parameters())
     logger.log(f'the parameter count is {pytorch_total_params}')
@@ -311,24 +311,24 @@ def main():
             test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, drop_last=False,
                                           num_workers=20, collate_fn=S2S_dataset.get_collate_fn())
 
-        if args.generate_path is not None:
-            model_gen_files = []
-            if os.path.exists(args.generate_path):
-                for item in os.scandir(args.generate_path):
-                    if item.is_file():
-                        if "gen_seed" in item.path:
-                            model_gen_files.append(item.path)
-                if len(model_gen_files) != 0 :
-                    model_gen_files.sort(key=lambda f: int((f.split('_epoch')[-1]).split('.txt')[0]), reverse=True)
-                    epoch_num = int((model_gen_files[0].split('_epoch')[-1]).split('.txt')[0])
-                    logger.info("***** load " + model_gen_files[0] + " *****")
-                else:
-                    epoch_num = 0
+        # if args.generate_path is not None:
+        #     model_gen_files = []
+        #     if os.path.exists(args.generate_path):
+        #         for item in os.scandir(args.generate_path):
+        #             if item.is_file():
+        #                 if "gen_seed" in item.path:
+        #                     model_gen_files.append(item.path)
+        #         if len(model_gen_files) != 0 :
+        #             model_gen_files.sort(key=lambda f: int((f.split('_epoch')[-1]).split('.txt')[0]), reverse=True)
+        #             epoch_num = int((model_gen_files[0].split('_epoch')[-1]).split('.txt')[0])
+        #             logger.info("***** load " + model_gen_files[0] + " *****")
+        #         else:
+        #             epoch_num = 0
 
-        else:
-            logger.info("generate_path is None")
-            exit(0)
-
+        # else:
+        #     logger.info("generate_path is None")
+        #     exit(0)
+        epoch_num = 0
         for epoch in range(args.num_samples - epoch_num):
             each_sample_list = []
             print("-------------------------------------------------------------")
@@ -379,7 +379,7 @@ def main():
 
             # total_sample_list.append(each_sample_list)
             out_path = os.path.join(args.generate_path, "rank" + str(dist.get_rank()) + "_gen_seed_101" +
-                                    "_num" + str(args.num_samples) + "_epoch" + str(epoch + 1 + epoch_num) + ".txt")
+                                    "_num" + str(args.num_samples) + "_epoch" + str(epoch + 1 + epoch_num) +"_inter"+str(args.interpolation)+ ".txt")
             with open(out_path, 'w') as f:
                 for sentence in each_sample_list:
                     f.write(sentence + '\n')

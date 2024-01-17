@@ -8,6 +8,7 @@ from diffusion_util.gaussian_diffusion import GaussianDiffusion
 def create_model_and_diffusion(
     args
 ):
+
     model = create_model(
         model_channels=args.model_channels,
         learn_sigma=args.learn_sigma,
@@ -20,6 +21,7 @@ def create_model_and_diffusion(
         logits_mode=args.logits_mode,
         init_pretrained=args.init_pretrained,
         token_emb_type=args.token_emb_type,
+        interpolation=args.interpolation
     )
     diffusion = create_gaussian_diffusion(
         steps=args.diffusion_steps,
@@ -50,6 +52,7 @@ def create_model(
     logits_mode=1,
     init_pretrained=True,
     token_emb_type='pretrain',
+    interpolation=1.0
 ):
     print(f'creating model, based on {model_arch}')
 
@@ -79,6 +82,7 @@ def create_model(
             logits_mode=logits_mode,
             init_pretrained=init_pretrained,
             token_emb_type=token_emb_type,
+            interpolation=interpolation
         )
     else:
         raise NotImplementedError

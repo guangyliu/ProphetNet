@@ -206,7 +206,8 @@ class CrossAttention_Diffusion_LM(nn.Module):
             init_pretrained=True,
             logits_mode=1,
             token_emb_type='pretrain',
-            fix_encoder=False
+            fix_encoder=False,
+            interpolation=1.0
     ):
         super().__init__()
         self.in_channels = in_channels
@@ -217,7 +218,10 @@ class CrossAttention_Diffusion_LM(nn.Module):
         self.init_pretrained = init_pretrained
         self.token_emb_type = token_emb_type
         self.fix_encoder = fix_encoder
-
+        self.interpolation = interpolation
+        if interpolation >= 100 or interpolation <= -100:
+            self.pos2neg_vec = None
+        self.passage_hidden = None
         cfg = BertConfig.from_pretrained(config_name)
         cfg.num_hidden_layers = 6
         self.passage_encoder = BertModel.from_pretrained(config_name, config=cfg)
@@ -336,17 +340,29 @@ class CrossAttention_Diffusion_LM(nn.Module):
         hidden_states = self.dropout(self.LayerNorm(emb_inputs))
         # encode embedding
         # print(emb_inputs.shape, attention_mask.shape)
-        if self.fix_encoder:
-            with torch.no_grad():
+        if timesteps.mean() > 999:
+            if self.fix_encoder:
+                with torch.no_grad():
+                    out = self.passage_encoder(input_ids=src_input_ids,
+                                                    attention_mask=src_attention_mask)
+                    passage_hidden = out.last_hidden_state
+            else:
                 out = self.passage_encoder(input_ids=src_input_ids,
-                                                 attention_mask=src_attention_mask)
-                passage_hidden = out.last_hidden_state
+                                        attention_mask=src_attention_mask)
+                passage_hidden = out.last_hidden_state + 0 * out.pooler_output.unsqueeze(1)
+                if 0 <= self.interpolation < 1.:
+                    tmp = torch.zeros_like(passage_hidden)
+                    tmp[:100] = self.interpolation*passage_hidden[:100] + (1-self.interpolation) * passage_hidden[100:]
+                    tmp[100:] = self.interpolation*passage_hidden[100:] + (1-self.interpolation) * passage_hidden[:100]
+                elif self.interpolation >= 100 or self.interpolation <= -100:
+                    if self.pos2neg_vec == None: 
+                        self.pos2neg_vec = passage_hidden[:100].mean(dim=0,keepdim=True) - passage_hidden[100:].mean(dim=0,keepdim=True)
+                    passage_hidden = passage_hidden + self.interpolation/100 * self.pos2neg_vec
+            self.passage_hidden = passage_hidden
         else:
-            out = self.passage_encoder(input_ids=src_input_ids,
-                                       attention_mask=src_attention_mask)
-            passage_hidden = out.last_hidden_state + 0 * out.pooler_output.unsqueeze(1)
-        avg_passage_hidden = passage_hidden.mean(0,keepdim=True).repeat([passage_hidden.shape[0],1,1])
-        passage_hidden = avg_passage_hidden
+            passage_hidden = self.passage_hidden
+        # avg_passage_hidden = passage_hidden.mean(0,keepdim=True).repeat([passage_hidden.shape[0],1,1])
+        # passage_hidden = avg_passage_hidden
         if answer_id is not None:
             answer_hidden_states = hidden_states.clone()
             answer_out = self.passage_encoder(input_ids=answer_id,
