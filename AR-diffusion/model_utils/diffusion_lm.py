@@ -165,13 +165,14 @@ class CrossAttention_Diffusion_LM(nn.Module):
                 src_input_ids=None, encoder_hidden_states=None, tgt_length=None, x_self_cond=None,
             ):
         # 1. prepare encoder output
+
         length_out = None
         if encoder_hidden_states is None:
             # Only for Training
             out = self.encoder(input_ids=src_input_ids, attention_mask=src_attention_mask)
             # In order to facilitate gradient return.
             encoder_hidden_states = out.last_hidden_state + 0 * out.pooler_output.unsqueeze(1)
-            
+
             if self.config.pred_len:
                 length_out = self.get_pred_len(encoder_hidden_states=encoder_hidden_states,
                                                src_masks=src_attention_mask)

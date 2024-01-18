@@ -75,6 +75,8 @@ def split_data(data, log=False):
 def main(config):
     local_rank = int(os.environ["LOCAL_RANK"])
     config.exp.dir = os.path.join(config.exp.root, config.data.name, config.exp.name)
+    if config.transfer != 0 or config.interpolation < 1.0:
+        config.exp.dir = os.path.join(config.exp.root, 'yelp', 'yelp')
     generate_path = os.path.join(config.exp.dir, str(config.load_step))
     if config.load_from_ema:
         generate_path += ('_ema_' + str(config.ema_rate))
@@ -167,7 +169,9 @@ def main(config):
         if config.data.name in ['commongen']:
             dev_data = load_jsonl_data(config, 'dev')
         else:
+            # import ipdb;ipdb.set_trace()
             dev_data = load_jsonl_data(config, 'test')
+        
         data_piece = split_data(dev_data, log=True)
 
         dev_dataset = S2S_dataset(data_piece, tokenizer, config)
@@ -197,7 +201,15 @@ def main(config):
                         input_ids=batch['src_input_ids'].cuda(), 
                         attention_mask=batch['src_attention_mask'].cuda(),
                     ).last_hidden_state  # [bs, seq_len, hz]
-                import ipdb;ipdb.set_trace()
+                    if config.avg:
+                        encoder_hidden_states = encoder_hidden_states.mean(dim=0,keepdim=True).repeat([encoder_hidden_states.shape[0],1,1])
+                    elif config.transfer != 0:
+                        assert encoder_hidden_states.shape[0] == 800, 'transfer only support 800'
+                        pos2neg_vec = encoder_hidden_states[:100].mean(dim=0,keepdim=True) - encoder_hidden_states[100:200].mean(dim=0,keepdim=True)
+                        encoder_hidden_states = encoder_hidden_states + config.transfer * pos2neg_vec # + pos->neg
+                        # encoder_hidden_states = encoder_hidden_states.repeat([1,config.tgt_len,1])
+                    elif config.interpolation < 1.0:
+                        a = 1
                 if config.pred_len:
                     with torch.no_grad():
                         length_out = model.get_pred_len(
@@ -264,9 +276,16 @@ def main(config):
                 if not os.path.exists(output_path):
                     os.makedirs(output_path)
             dist.barrier()
-
+            if config.avg:
+                prefix='avg'
+            else:
+                prefix=''
+            if config.transfer != 0:
+                prefix+= 'trans'+str(config.transfer)
+            if config.interpolation < 1.0:
+                prefix+='inter_' + str(config.interpolation)
             out_path = os.path.join(
-                output_path, "rank" + str(dist.get_rank())+"_seed_" + str(config.exp.seed) + ".txt")
+                output_path, prefix+"_rank" + str(dist.get_rank())+"_seed_" + str(config.exp.seed) + ".txt")
             with open(out_path, 'w') as f:
                 for sentence in tqdm(each_sample_list):
                     f.write(str(sentence) + '\n')

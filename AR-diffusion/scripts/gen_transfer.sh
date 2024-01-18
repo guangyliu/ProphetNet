@@ -1,11 +1,16 @@
 export PYTHONPATH=$PYTHONPATH:./AR-Diffusion
 
 # XSum
-FILE_NAME=yelp
-STEP=80000
+if (( $(echo "$2 > 0" | bc -l) )); then
+    FILE_NAME="transfer_pos"
+else
+    FILE_NAME="transfer_neg"
+fi
+echo $FILE_NAME
+STEP=10000
 
-CUDA_VISIBLE_DEVICES=$1 torchrun --nproc_per_node=1 --nnodes=1 ./gen_utils/generate.py \
-model.name='bert-base-uncased' batch_size=1000 \
+CUDA_VISIBLE_DEVICES=$1 torchrun --nproc_per_node=1 --nnodes=1 --master_port=2591$1 ./gen_utils/generate.py \
+model.name='bert-base-uncased' batch_size=800 \
 exp.name=$FILE_NAME load_step=$STEP \
 data.name=$FILE_NAME max_pos_len=32 num_samples=1 \
 intermediate_size=2048 num_attention_heads=8 \
@@ -13,6 +18,7 @@ in_channels=128 out_channels=128 time_channels=128 \
 skip_sample=True gen_timesteps=20 \
 schedule_sampler='xy_uniform' time_att=True att_strategy='txl' \
 tgt_len=32 prediction=True load_from_ema=True \
+avg=False transfer=$2 interpolation=1.
 
 
 

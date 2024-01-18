@@ -1,10 +1,10 @@
 export PYTHONPATH=$PYTHONPATH:./AR-Diffusion
 
 # XSum
-FILE_NAME="yelp"
+FILE_NAME="amazon"
 STEP=80000
 
-CUDA_VISIBLE_DEVICES=7 torchrun --nproc_per_node=1 --nnodes=1 --master_port=25901 ./train_utils/trainer_main.py \
+CUDA_VISIBLE_DEVICES=6 torchrun --nproc_per_node=1 --nnodes=1 --master_port=25902 ./train_utils/trainer_main.py \
 model.name='bert-base-uncased' batch_size=128 grad_accum=1 \
 total_steps=$STEP exp.name=$FILE_NAME \
 data.name=$FILE_NAME tgt_len=32 max_pos_len=32 lr=1e-5 lr_step=40000 \

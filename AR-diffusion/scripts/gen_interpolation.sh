@@ -2,7 +2,7 @@ export PYTHONPATH=$PYTHONPATH:./AR-Diffusion
 
 # XSum
 FILE_NAME=yelp
-STEP=80000
+STEP=10000
 
 CUDA_VISIBLE_DEVICES=$1 torchrun --nproc_per_node=1 --nnodes=1 ./gen_utils/generate.py \
 model.name='bert-base-uncased' batch_size=1000 \
@@ -13,6 +13,7 @@ in_channels=128 out_channels=128 time_channels=128 \
 skip_sample=True gen_timesteps=20 \
 schedule_sampler='xy_uniform' time_att=True att_strategy='txl' \
 tgt_len=32 prediction=True load_from_ema=True \
+avg=False transfer=0. interpolation=$2
 
 
 

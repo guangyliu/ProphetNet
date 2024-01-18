@@ -497,6 +497,8 @@ class GaussianDiffusion:
         :param progress: if True, show a tqdm progress bar.
         :return: a non-differentiable batch of samples.
         """
+        
+
         final = None
         if self.config.schedule_sampler == 'xy_uniform':
             if self.config.skip_sample:

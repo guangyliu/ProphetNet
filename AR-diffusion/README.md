@@ -1,3 +1,20 @@
+# LGY
+reconstruction: 
+```shell
+bash scripts/gen.sh 0 
+```
+generation:
+```shell
+bash scripts/gen_avg.sh 0 
+```
+interpolation:
+```shell
+bash scripts/gen_interpolation.sh 0 
+```
+style_transfer:
+```shell
+bash scripts/transfer.sh 0 0.5
+```
 # AR-Diffusion
 
 This repo provides the code and models for [AR-Diffusion: Auto-Regressive Diffusion Model for Text Generation](https://arxiv.org/abs/2305.09515). 
