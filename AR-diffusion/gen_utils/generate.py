@@ -209,7 +209,11 @@ def main(config):
                         encoder_hidden_states = encoder_hidden_states + config.transfer * pos2neg_vec # + pos->neg
                         # encoder_hidden_states = encoder_hidden_states.repeat([1,config.tgt_len,1])
                     elif config.interpolation < 1.0:
-                        a = 1
+                        assert encoder_hidden_states.shape[0] == 200, 'interpolation only support 200'
+                        tmp = torch.zeros_like(encoder_hidden_states)
+                        tmp[:100] = config.interpolation*encoder_hidden_states[:100] + (1-config.interpolation) * encoder_hidden_states[100:]
+                        tmp[100:] = config.interpolation*encoder_hidden_states[100:] + (1-config.interpolation) * encoder_hidden_states[:100]
+                        encoder_hidden_states = tmp
                 if config.pred_len:
                     with torch.no_grad():
                         length_out = model.get_pred_len(

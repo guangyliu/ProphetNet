@@ -354,6 +354,7 @@ class CrossAttention_Diffusion_LM(nn.Module):
                     tmp = torch.zeros_like(passage_hidden)
                     tmp[:100] = self.interpolation*passage_hidden[:100] + (1-self.interpolation) * passage_hidden[100:]
                     tmp[100:] = self.interpolation*passage_hidden[100:] + (1-self.interpolation) * passage_hidden[:100]
+                    passage_hidden = tmp
                 elif self.interpolation >= 100 or self.interpolation <= -100:
                     if self.pos2neg_vec == None: 
                         self.pos2neg_vec = passage_hidden[:100].mean(dim=0,keepdim=True) - passage_hidden[100:].mean(dim=0,keepdim=True)

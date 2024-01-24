@@ -1,5 +1,5 @@
 
-OUT_DIR="./ckpt/interpolation_generation1"
+OUT_DIR="./ckpt/interpolation_generation2"
 MODEL_DIR="./ckpt/yelp/model_checkpoint-80000"
 DATA_PATH="./data/latentops_dataset"
 DATA_NAME="interpolation_data"
